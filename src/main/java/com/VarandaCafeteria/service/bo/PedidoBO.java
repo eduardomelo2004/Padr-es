@@ -8,6 +8,7 @@ import com.VarandaCafeteria.dao.ClienteDAO;
 import com.VarandaCafeteria.dao.PedidoDAO;
 import com.VarandaCafeteria.repository.PedidoRepository;
 import com.VarandaCafeteria.repository.ProdutoRepository;
+import com.VarandaCafeteria.security.JwtUtil;
 import com.VarandaCafeteria.service.decorator.AdicionalApplier;
 import com.VarandaCafeteria.service.factory.Bebida;
 import com.VarandaCafeteria.service.factory.BebidaFactoryProvider;
@@ -22,6 +23,10 @@ import org.springframework.stereotype.Service;
 import com.VarandaCafeteria.service.command.AdicionarItemCommand;
 import com.VarandaCafeteria.service.command.FinalizarPedidoCommand;
 import com.VarandaCafeteria.service.command.PedidoInvoker;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+
+
 
 
 
@@ -59,9 +64,20 @@ public class PedidoBO {
     @Autowired
     private ProdutoRepository produtoRepository;
 
+    @Autowired
+    private HttpServletRequest request;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
 
     public PedidoResponseDTO criarPedido(PedidoRequestDTO dto) {
-        Cliente cliente = clienteDAO.buscarPorId(dto.getIdCliente())
+        String authHeader = request.getHeader("Authorization");
+        String token = authHeader.substring(7); // remove "Bearer "
+
+        Long idCliente = jwtUtil.extractId(token);
+
+        Cliente cliente = clienteDAO.buscarPorId(idCliente)
                 .orElseThrow(() -> new IllegalArgumentException("Cliente não encontrado"));
 
         Pedido pedido = new Pedido();
@@ -254,4 +270,14 @@ public class PedidoBO {
                 .map(this::toResponseDTO)
                 .toList();
     }
+
+    public List<Pedido> buscarPorEstado(EstadoPedido estado) {
+        return pedidoDAO.buscarPorEstado(estado);
+    }
+
+    public List<Pedido> buscarPorCliente(Long idCliente) {
+        return pedidoDAO.buscarPorCliente(idCliente);
+    }
+
+
 }

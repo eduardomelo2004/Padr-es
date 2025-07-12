@@ -33,8 +33,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         String method = request.getMethod();
 
-        if (path.equals("/api/clientes/login") ||
-                (path.equals("/api/clientes") && method.equalsIgnoreCase("POST"))) {
+        if (PUBLIC_PATHS.contains(path) && (path.equals("/api/clientes") ? method.equalsIgnoreCase("POST") : true)) {
             filterChain.doFilter(request, response);
             return;
         }

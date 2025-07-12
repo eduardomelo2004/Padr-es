@@ -60,20 +60,9 @@ public class ClienteController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Usuário sem role definida");
         }
 
-        String token = jwtUtil.generateToken(cliente.getEmail(), cliente.getRole().name());
+        String token = jwtUtil.generateToken(cliente.getId(), cliente.getEmail(), cliente.getRole().name());
         return ResponseEntity.ok(new LoginResponseDTO(token, cliente.getRole().name()));
     }
-
-//    @PostMapping("/login")
-//    public ResponseEntity<Map<String, String>> login(@RequestBody ClienteLoginDTO dto) {
-//        Map<String, String> body = new HashMap<>();
-//        body.put("token", "token-de-teste");
-//        body.put("role", "CLIENTE");
-//        return ResponseEntity.ok(body);
-//    }
-
-
-
     /**
      * Consulta o saldo da carteira digital de um cliente
      */

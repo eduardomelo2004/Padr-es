@@ -2,9 +2,15 @@ package com.VarandaCafeteria.controller;
 
 import com.VarandaCafeteria.dto.PedidoRequestDTO;
 import com.VarandaCafeteria.dto.PedidoResponseDTO;
+import com.VarandaCafeteria.model.entity.Pedido;
+import com.VarandaCafeteria.model.enums.EstadoPedido;
+import com.VarandaCafeteria.security.JwtUtil;
 import com.VarandaCafeteria.service.bo.PedidoBO;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -14,6 +20,13 @@ public class PedidoController {
 
     @Autowired
     private PedidoBO pedidoBO;
+
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private HttpServletRequest request;
+
 
     /**
      * Endpoint para clientes criarem novos pedidos
@@ -46,4 +59,27 @@ public class PedidoController {
     public PedidoResponseDTO buscarPorId(@PathVariable Long id) {
         return pedidoBO.buscarPorIdDTO(id);
     }
+
+    @GetMapping("/estado/{estado}")
+    public List<PedidoResponseDTO> listarPorEstado(@PathVariable String estado) {
+        try {
+            EstadoPedido estadoPedido = EstadoPedido.valueOf(estado.toUpperCase());
+            return pedidoBO.buscarPorEstado(estadoPedido).stream()
+                    .map(pedidoBO::toResponseDTO)
+                    .toList();
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado inválido: " + estado);
+        }
+    }
+
+    @GetMapping("/meus-pedidos")
+    public List<PedidoResponseDTO> listarMeusPedidos() {
+        String token = request.getHeader("Authorization").substring(7);
+        Long idCliente = jwtUtil.extractId(token);
+
+        List<Pedido> pedidos = pedidoBO.buscarPorCliente(idCliente);
+        return pedidos.stream().map(pedidoBO::toResponseDTO).toList();
+    }
+
+
 }

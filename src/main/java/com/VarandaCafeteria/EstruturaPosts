@@ -1,40 +1,131 @@
-// POST /api/clientes
+Documentação de Endpoints da API
+1. Login do Cliente
+POST /api/clientes/login
+Autentica o usuário e retorna o token JWT.
+Headers:
 
-{
-  "email": "cliente@email.com",
-  "senha": "123456",
-  "carteiraDigital": 50.0
-}
+Content-Type: application/json
 
-
-// POST /api/clientes/login
+Body:
 
 {
   "email": "cliente@email.com",
   "senha": "123456"
 }
 
-
-// POST /api/pedidos
-
+Resposta:
 {
-  "idCliente": 1,
-  "tipoPagamento": "{tipo de pagamento}",
-  "itens": [
-    {
-      "bebidaBase": "CAFE",
-      "adicionais": ["LEITE", "ACUCAR"]
-    },
-    {
-      "bebidaBase": "CAPPUCCINO",
-      "adicionais": ["CANELA"]
-    }
-  ]
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "role": "CLIENTE"
 }
 
 
-// PUT /api/pedidos/{id}/avancar-estado
+2. Cadastro de Cliente
+POST /api/clientes
+Cria uma nova conta.
+Headers:
 
-PUT http://localhost:8080/api/pedidos/{id_do_pedido}/avancar-estado
+Content-Type: application/json
 
+Body:
+
+{
+  "email": "cliente@email.com",
+  "senha": "123456",
+  "carteiraDigital": 50.0,
+  "role": "CLIENTE"
+}
+
+
+3. Consultar Saldo da Carteira
+GET /api/clientes/{id}/carteira
+Retorna o saldo da carteira digital do cliente.
+Headers:
+
+Authorization: Bearer <token>
+
+4. Criar Pedido
+POST /api/pedidos
+Cria um pedido com uma ou mais bebidas e adicionais.
+Headers:
+
+Content-Type: application/json
+Authorization: Bearer <token>
+
+Body:
+
+{
+  "itens": [
+    {
+      "bebidaBase": "CAFE",
+      "adicionais": ["LEITE", "CANELA"]
+    },
+    {
+      "bebidaBase": "CAPPUCCINO",
+      "adicionais": ["ACUCAR"]
+    }
+  ],
+  "tipoPagamento": "{TIPO_DE_PAGAMENTO}"
+}
+
+
+5. Avançar Estado de um Pedido
+PUT /api/pedidos/{id}/avancar-estado
+Avança o estado de um pedido (usado pela cozinha).
+Headers:
+
+Authorization: Bearer <token>
+
+Body:
+
+{}
+
+
+6. Listar Todos os Pedidos
+GET /api/pedidos
+Lista todos os pedidos (usado pela cozinha).
+Headers:
+
+Authorization: Bearer <token>
+
+
+7. Listar Pedido por ID
+GET /api/pedidos/{id}
+Retorna um pedido específico.
+Headers:
+
+Authorization: Bearer <token>
+
+
+8. Listar Pedidos por Estado
+GET /api/pedidos/estado/{estado}
+Lista todos os pedidos filtrando por estado.
+Exemplo:
+
+GET /api/pedidos/estado/REALIZADO
+
+Headers:
+
+Authorization: Bearer <token>
+
+
+9. Listar Pedidos do Cliente Logado
+GET /api/pedidos/meus-pedidos
+Lista todos os pedidos feitos pelo cliente logado (extraindo o ID do token).
+Headers:
+
+Authorization: Bearer <token>
+
+
+10. Listar Bebidas Base
+GET /api/produtos/bebidas-base
+Lista todos os produtos base cadastrados (como CAFÉ, CAPPUCCINO).
+
+11. Listar Adicionais Disponíveis
+GET /api/produtos/adicionais
+Lista todos os adicionais cadastrados (como LEITE, CANELA, AÇÚCAR).
+Headers comuns (JWT)
+todos os endpoints (exceto login e cadastro) exigem o cabeçalho:
+
+Authorization: Bearer <seu_token_aqui>
 
