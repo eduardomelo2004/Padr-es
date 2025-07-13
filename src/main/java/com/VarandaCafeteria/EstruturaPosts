@@ -129,3 +129,19 @@ todos os endpoints (exceto login e cadastro) exigem o cabeçalho:
 
 Authorization: Bearer <seu_token_aqui>
 
+12. Adicionar Produtos
+POST /api/produtos
+Adiciona um novo produto: bebida base ou adicional
+Headers:
+
+Content-Type: application/json
+Authorization: Bearer <token>
+
+Body:
+
+{
+		"nome": "{nome do produto}",
+  "preco": {preço},
+  "isAdicional": true se for adicional ou false se for bebida base.
+}
+
