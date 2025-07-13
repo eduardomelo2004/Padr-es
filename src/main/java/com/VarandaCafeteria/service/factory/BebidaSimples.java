@@ -1,21 +1,22 @@
 package com.VarandaCafeteria.service.factory;
 
-public class BebidaSimples implements Bebida {
-    private final String descricao;
-    private final double preco;
+import com.VarandaCafeteria.model.entity.Produto;
 
-    public BebidaSimples(String descricao, double preco) {
-        this.descricao = descricao;
-        this.preco = preco;
+public class BebidaSimples implements Bebida {
+
+    private final Produto produto;
+
+    public BebidaSimples(Produto produto) {
+        this.produto = produto;
     }
 
     @Override
     public String getDescricao() {
-        return descricao;
+        return produto.getNome();
     }
 
     @Override
     public double getPreco() {
-        return preco;
+        return produto.getPreco();
     }
 }

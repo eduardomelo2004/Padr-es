@@ -91,17 +91,26 @@ public class PedidoBO {
         PedidoInvoker invoker = new PedidoInvoker();
 
         for (ItemPedidoDTO itemDto : dto.getItens()) {
+            Produto produtoBase = produtoRepository.findByNomeAndIsAdicional(itemDto.getBebidaBase().toUpperCase(), false)
+                    .orElseThrow(() -> new IllegalArgumentException("Produto base não encontrado: " + itemDto.getBebidaBase()));
+
+            // Cria a bebida base a partir do nome enviado pelo cliente (ex: "CAFÉ")
             Bebida bebida = bebidaFactoryProvider.criarBebida(itemDto.getBebidaBase());
+
+            // Aplica os adicionais com o Decorator
             bebida = adicionalApplier.aplicarAdicionais(bebida, itemDto.getAdicionais());
 
+            // Cria o item do pedido
             ItemPedido item = new ItemPedido();
             item.setPedido(pedido);
             item.setDescricao(bebida.getDescricao());
             item.setPreco(bebida.getPreco());
+            item.setProduto(produtoBase);
 
+            // Adiciona os adicionais (entidade)
             List<Adicional> adicionais = new ArrayList<>();
             for (String nomeAdicional : itemDto.getAdicionais()) {
-                Produto adicionalProduto = produtoRepository.findByNome(nomeAdicional)
+                Produto adicionalProduto = produtoRepository.findByNome(nomeAdicional.toUpperCase())
                         .orElseThrow(() -> new IllegalArgumentException("Adicional não encontrado: " + nomeAdicional));
 
                 Adicional adicional = new Adicional();
@@ -112,7 +121,7 @@ public class PedidoBO {
             }
             item.setAdicionais(adicionais);
 
-            // ⏺ Encapsula a ação de adicionar item
+            // Adiciona o item ao pedido
             AdicionarItemCommand cmdAdicionar = new AdicionarItemCommand(pedido, item);
             invoker.executarComando(cmdAdicionar);
 
@@ -187,29 +196,6 @@ public class PedidoBO {
 
         return pedido;
     }
-
-//    public PedidoResponseDTO toResponseDTO(Pedido pedido) {
-//        PedidoResponseDTO dto = new PedidoResponseDTO();
-//        dto.setId(pedido.getId());
-//        dto.setPrecoFinal(pedido.getPrecoFinal());
-//        dto.setEstado(pedido.getEstado().name());
-//
-//        ClienteResponseDTO clienteDTO = new ClienteResponseDTO();
-//        clienteDTO.setId(pedido.getCliente().getId());
-//        clienteDTO.setEmail(pedido.getCliente().getEmail());
-//        dto.setCliente(clienteDTO);
-//
-//        List<ItemPedidoResponseDTO> itens = pedido.getItens().stream().map(item -> {
-//            ItemPedidoResponseDTO i = new ItemPedidoResponseDTO();
-//            i.setDescricao(item.getDescricao());
-//            i.setPreco(item.getPreco());
-//            return i;
-//        }).toList();
-//
-//        dto.setItens(itens);
-//
-//        return dto;
-//    }
 
     public PedidoResponseDTO toResponseDTO(Pedido pedido) {
         PedidoResponseDTO dto = new PedidoResponseDTO();

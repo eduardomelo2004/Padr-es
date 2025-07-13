@@ -16,6 +16,6 @@ public class BebidaFactoryProvider {
         Produto produto = produtoRepository.findByNomeAndIsAdicional(tipo.toUpperCase(), false)
                 .orElseThrow(() -> new IllegalArgumentException("Bebida base não encontrada: " + tipo));
 
-        return new BebidaSimples(produto.getNome(), produto.getPreco());
+        return new BebidaSimples(produto);
     }
 }
