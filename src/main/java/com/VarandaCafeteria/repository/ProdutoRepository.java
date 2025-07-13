@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     List<Produto> findByIsAdicional(Boolean isAdicional);
     Optional<Produto> findByNome(String nome);
+    Optional<Produto> findByNomeAndIsAdicional(String nome, boolean isAdicional);
 }
