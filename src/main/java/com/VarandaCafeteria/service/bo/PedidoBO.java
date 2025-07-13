@@ -152,11 +152,13 @@ public class PedidoBO {
         // ⏺ Adiciona observers
         pedido.adicionarObservador(new CozinhaObserver(messagingTemplate, this));
         pedido.adicionarObservador(new ClienteObserver(cliente.getId()));
-        pedido.notificarObservadores();
 
         // ⏺ Finaliza o pedido usando Command
         FinalizarPedidoCommand cmdFinalizar = new FinalizarPedidoCommand(pedido, pedidoDAO);
         invoker.executarComando(cmdFinalizar);
+
+        // notifica apenas após adicionar o pedido no banco de dados para ter acesso ao id
+        pedido.notificarObservadores();
 
         //notifica o Observer
         messagingTemplate.convertAndSend(
