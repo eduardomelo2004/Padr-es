@@ -100,10 +100,16 @@ public class PedidoBO {
             // Aplica os adicionais com o Decorator
             bebida = adicionalApplier.aplicarAdicionais(bebida, itemDto.getAdicionais());
 
+            String descricaoAdicionais = String.join(", ",
+                    itemDto.getAdicionais().stream()
+                            .map(String::toUpperCase)
+                            .toList()
+            );
+
             // Cria o item do pedido
             ItemPedido item = new ItemPedido();
             item.setPedido(pedido);
-            item.setDescricao(bebida.getDescricao());
+            item.setDescricao(descricaoAdicionais);
             item.setPreco(bebida.getPreco());
             item.setProduto(produtoBase);
 
@@ -211,12 +217,10 @@ public class PedidoBO {
         List<ItemPedidoResponseDTO> itens = pedido.getItens().stream().map(item -> {
             ItemPedidoResponseDTO i = new ItemPedidoResponseDTO();
 
-            // Separar a bebida base da descrição
-            String descricao = item.getDescricao(); // Ex: "CAFÉ com LEITE e AÇÚCAR"
-            String[] partes = descricao.split(" com ");
-            i.setBebidaBase(partes[0]);
+            // Agora pegamos a bebida base a partir do produto vinculado
+            i.setBebidaBase(item.getProduto() != null ? item.getProduto().getNome() : "DESCONHECIDO");
 
-            // Adicionais (vêm da lista)
+            // Adicionais continuam sendo lidos da entidade adicional
             List<String> adicionais = item.getAdicionais().stream()
                     .map(ad -> ad.getProduto().getNome())
                     .toList();
