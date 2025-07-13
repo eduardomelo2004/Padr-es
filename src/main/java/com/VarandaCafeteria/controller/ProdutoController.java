@@ -1,9 +1,11 @@
 package com.VarandaCafeteria.controller;
 
+import com.VarandaCafeteria.dto.ProdutoRequestDTO;
 import com.VarandaCafeteria.dto.ProdutoResponseDTO;
 import com.VarandaCafeteria.model.entity.Produto;
 import com.VarandaCafeteria.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 
@@ -15,6 +17,17 @@ public class ProdutoController {
 
     @Autowired
     private ProdutoRepository produtoRepository;
+
+    @PostMapping
+    public ResponseEntity<Produto> criarProduto(@RequestBody ProdutoRequestDTO dto) {
+        Produto produto = new Produto();
+        produto.setNome(dto.getNome().toUpperCase());
+        produto.setPreco(dto.getPreco());
+        produto.setIsAdicional(dto.getIsAdicional());
+
+        Produto salvo = produtoRepository.save(produto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
+    }
 
     @GetMapping("/bebidas-base")
     public ResponseEntity<List<ProdutoResponseDTO>> listarBebidaBase() {
