@@ -136,24 +136,24 @@ public class PedidoBO {
 
         pedido.setPrecoInicial(precoTotal);
 
-        // ⏺ Aplica desconto com Strategy
+        // Aplica desconto com Strategy
         double precoFinal = pagamentoBO.calcularPrecoFinal(precoTotal, dto.getTipoPagamento());
         pedido.setPrecoFinal(precoFinal);
         pedido.setDesconto(precoTotal - precoFinal);
 
-        // ⏺ Define estado inicial
+        // Define estado inicial
         pedido.setEstado(EstadoPedido.REALIZADO);
 
-        // ⏺ Atualiza a carteira do cliente
+        // Atualiza a carteira do cliente
         cliente.setCarteiraDigital(cliente.getCarteiraDigital() - precoFinal);
         clienteDAO.salvar(cliente);
 
 
-        // ⏺ Adiciona observers
+        // Adiciona observers
         pedido.adicionarObservador(new CozinhaObserver(messagingTemplate, this));
         pedido.adicionarObservador(new ClienteObserver(cliente.getId()));
 
-        // ⏺ Finaliza o pedido usando Command
+        //  Finaliza o pedido usando Command
         FinalizarPedidoCommand cmdFinalizar = new FinalizarPedidoCommand(pedido, pedidoDAO);
         invoker.executarComando(cmdFinalizar);
 
