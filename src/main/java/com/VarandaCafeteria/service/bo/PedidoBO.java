@@ -25,6 +25,8 @@ import com.VarandaCafeteria.service.command.FinalizarPedidoCommand;
 import com.VarandaCafeteria.service.command.PedidoInvoker;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 
 
@@ -140,6 +142,11 @@ public class PedidoBO {
         double precoFinal = pagamentoBO.calcularPrecoFinal(precoTotal, dto.getTipoPagamento());
         pedido.setPrecoFinal(precoFinal);
         pedido.setDesconto(precoTotal - precoFinal);
+
+        // Verifica se o cliente tem saldo suficiente
+        if (cliente.getCarteiraDigital() < precoFinal) {
+            throw new IllegalArgumentException("Saldo insuficiente para realizar o pedido.");
+        }
 
         // Define estado inicial
         pedido.setEstado(EstadoPedido.REALIZADO);
