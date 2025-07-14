@@ -7,6 +7,7 @@ import com.VarandaCafeteria.security.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -19,6 +20,9 @@ public class ClienteBO {
     private ClienteRepository clienteRepository;
 
     @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
     private JwtUtil jwtUtil;
 
     public ClienteResponseDTO criarConta(ClienteRequestDTO dto) {
@@ -28,7 +32,8 @@ public class ClienteBO {
 
         Cliente cliente = new Cliente();
         cliente.setEmail(dto.getEmail());
-        cliente.setSenha(dto.getSenha());
+//        cliente.setSenha(dto.getSenha());
+        cliente.setSenha(passwordEncoder.encode(dto.getSenha()));
         cliente.setCarteiraDigital(dto.getCarteiraDigital());
         cliente.setRole(dto.getRole());
 
@@ -41,8 +46,13 @@ public class ClienteBO {
     }
 
     public LoginResponseDTO autenticarCliente(ClienteLoginDTO dto) {
-        Cliente cliente = clienteRepository.findByEmailAndSenha(dto.getEmail(), dto.getSenha())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas"));
+        Cliente cliente = clienteRepository.findByEmail(dto.getEmail())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas - Usuário Não Existe"));
+
+        // Verifica a senha encriptada
+        if (!passwordEncoder.matches(dto.getSenha(), cliente.getSenha())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciais inválidas - Senha Incorreta");
+        }
 
         if (cliente.getRole() == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Usuário sem role definida");
