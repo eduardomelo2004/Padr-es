@@ -274,9 +274,23 @@ public class PedidoBO {
         return pedidoDAO.buscarPorEstado(estado);
     }
 
-    public List<Pedido> buscarPorCliente(Long idCliente) {
-        return pedidoDAO.buscarPorCliente(idCliente);
+    public List<PedidoResponseDTO> buscarPedidosDoCliente(HttpServletRequest request) {
+        String token = request.getHeader("Authorization").substring(7);
+        Long idCliente = jwtUtil.extractId(token);
+
+        return pedidoDAO.buscarPorCliente(idCliente).stream()
+                .map(this::toResponseDTO)
+                .toList();
     }
 
-
+    public List<PedidoResponseDTO> buscarPorEstado(String estadoStr) {
+        try {
+            EstadoPedido estado = EstadoPedido.valueOf(estadoStr.toUpperCase());
+            return buscarPorEstado(estado).stream()
+                    .map(this::toResponseDTO)
+                    .toList();
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado inválido: " + estadoStr);
+        }
+    }
 }

@@ -62,24 +62,15 @@ public class PedidoController {
 
     @GetMapping("/estado/{estado}")
     public List<PedidoResponseDTO> listarPorEstado(@PathVariable String estado) {
-        try {
-            EstadoPedido estadoPedido = EstadoPedido.valueOf(estado.toUpperCase());
-            return pedidoBO.buscarPorEstado(estadoPedido).stream()
-                    .map(pedidoBO::toResponseDTO)
-                    .toList();
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado inválido: " + estado);
-        }
+        return pedidoBO.buscarPorEstado(estado);
     }
+
 
     @GetMapping("/meus-pedidos")
     public List<PedidoResponseDTO> listarMeusPedidos() {
-        String token = request.getHeader("Authorization").substring(7);
-        Long idCliente = jwtUtil.extractId(token);
-
-        List<Pedido> pedidos = pedidoBO.buscarPorCliente(idCliente);
-        return pedidos.stream().map(pedidoBO::toResponseDTO).toList();
+        return pedidoBO.buscarPedidosDoCliente(request);
     }
+
 
 
 }
