@@ -2,6 +2,7 @@ package com.VarandaCafeteria.controller;
 
 import com.VarandaCafeteria.dto.*;
 import com.VarandaCafeteria.service.bo.ClienteBO;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +33,9 @@ public class ClienteController {
     /**
      * Consulta o saldo da carteira digital de um cliente
      */
-    @GetMapping("/{id}/carteira")
-    public ResponseEntity<CarteiraResponseDTO> consultarCarteira(@PathVariable Long id) {
-        return ResponseEntity.ok(clienteBO.consultarCarteira(id));
+    @GetMapping("/carteira")
+    public ResponseEntity<CarteiraResponseDTO> consultarCarteira(HttpServletRequest request) {
+        return ResponseEntity.ok(clienteBO.consultarCarteira(request));
     }
+
 }
