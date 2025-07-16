@@ -1,40 +1,42 @@
 package com.VarandaCafeteria.service.bo;
 
-import com.VarandaCafeteria.dto.*;
-import com.VarandaCafeteria.model.entity.*;
-import com.VarandaCafeteria.model.enums.EstadoPedido;
-import com.VarandaCafeteria.model.enums.TipoPagamento;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import com.VarandaCafeteria.dao.ClienteDAO;
 import com.VarandaCafeteria.dao.PedidoDAO;
+import com.VarandaCafeteria.dto.ClienteResponseDTO;
+import com.VarandaCafeteria.dto.ItemPedidoDTO;
+import com.VarandaCafeteria.dto.ItemPedidoResponseDTO;
+import com.VarandaCafeteria.dto.PedidoRequestDTO;
+import com.VarandaCafeteria.dto.PedidoResponseDTO;
+import com.VarandaCafeteria.model.entity.Adicional;
+import com.VarandaCafeteria.model.entity.Cliente;
+import com.VarandaCafeteria.model.entity.ItemPedido;
+import com.VarandaCafeteria.model.entity.Pedido;
+import com.VarandaCafeteria.model.entity.Produto;
+import com.VarandaCafeteria.model.enums.EstadoPedido;
 import com.VarandaCafeteria.repository.PedidoRepository;
 import com.VarandaCafeteria.repository.ProdutoRepository;
 import com.VarandaCafeteria.security.JwtUtil;
+import com.VarandaCafeteria.service.command.AdicionarItemCommand;
+import com.VarandaCafeteria.service.command.FinalizarPedidoCommand;
+import com.VarandaCafeteria.service.command.PedidoInvoker;
 import com.VarandaCafeteria.service.decorator.AdicionalApplier;
 import com.VarandaCafeteria.service.factory.Bebida;
 import com.VarandaCafeteria.service.factory.BebidaFactoryProvider;
-import com.VarandaCafeteria.service.bo.PagamentoBO;
 import com.VarandaCafeteria.service.observer.ClienteObserver;
 import com.VarandaCafeteria.service.observer.CozinhaObserver;
 import com.VarandaCafeteria.service.state.EstadoPedidoState;
 import com.VarandaCafeteria.service.state.EstadoPedidoStateFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.stereotype.Service;
-import com.VarandaCafeteria.service.command.AdicionarItemCommand;
-import com.VarandaCafeteria.service.command.FinalizarPedidoCommand;
-import com.VarandaCafeteria.service.command.PedidoInvoker;
+
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.server.ResponseStatusException;
-import org.springframework.http.HttpStatus;
-
-
-
-
-
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Service
 public class PedidoBO {
@@ -158,7 +160,7 @@ public class PedidoBO {
 
         // Adiciona observers
         pedido.adicionarObservador(new CozinhaObserver(messagingTemplate, this));
-        pedido.adicionarObservador(new ClienteObserver(cliente.getId()));
+        pedido.adicionarObservador(new ClienteObserver(cliente.getId(),messagingTemplate));
 
         //  Finaliza o pedido usando Command
         FinalizarPedidoCommand cmdFinalizar = new FinalizarPedidoCommand(pedido, pedidoDAO);
@@ -168,15 +170,15 @@ public class PedidoBO {
         pedido.notificarObservadores();
 
         //notifica o Observer
-        messagingTemplate.convertAndSend(
-                "/topic/pedidos/" + pedido.getCliente().getId(),
-                pedido.getEstado().name()
-        );
+//        messagingTemplate.convertAndSend(
+//                "/topic/pedidos/" + pedido.getCliente().getId(),
+//                pedido.getEstado().name()
+//        );
 
-        messagingTemplate.convertAndSend(
-                "/topic/cozinha",
-                "Novo pedido #" + pedido.getId() + " - " + pedido.getEstado().name()
-        );
+//        messagingTemplate.convertAndSend(
+//                "/topic/cozinha",
+//                "Novo pedido #" + pedido.getId() + " - " + pedido.getEstado().name()
+//        );
 
 
         return toResponseDTO(pedido);
@@ -204,10 +206,11 @@ public class PedidoBO {
 
         pedido.notificarObservadores(); // notifica cliente e/ou cozinha
 
-        messagingTemplate.convertAndSend(
-                "/topic/pedidos/" + pedido.getCliente().getId(),
-                pedido.getEstado().name()
-        );
+//        messagingTemplate.convertAndSendToUser(
+//                pedido.getCliente().getId().toString(), // id do cliente como string
+//                "/queue/pedidos",                       // canal privado
+//                pedido.getEstado().name()               // conteúdo da mensagem
+//        );
 
         return pedido;
     }

@@ -1,7 +1,8 @@
 package com.VarandaCafeteria.security;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import java.io.IOException;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -10,8 +11,10 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
-import java.util.List;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -32,6 +35,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
         String method = request.getMethod();
+
+                // Permite handshake WebSocket sem exigir JWT
+        if (path.equals("/ws") || path.startsWith("/ws/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if (PUBLIC_PATHS.contains(path) && (path.equals("/api/clientes") ? method.equalsIgnoreCase("POST") : true)) {
             filterChain.doFilter(request, response);
