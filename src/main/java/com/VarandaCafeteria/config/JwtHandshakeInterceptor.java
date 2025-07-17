@@ -7,6 +7,7 @@ import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.support.ChannelInterceptor;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -45,17 +47,30 @@ public class JwtHandshakeInterceptor extends HttpSessionHandshakeInterceptor imp
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
-        if (accessor.getCommand() == null) return message;
 
-        if (accessor.getUser() == null && accessor.getSessionAttributes() != null) {
-            Object user = accessor.getSessionAttributes().get("user");
-            if (user instanceof Principal principal) {
-                System.out.println("[JwtHandshakeInterceptor] Associando Principal: " + principal.getName());
-                accessor.setUser(principal);
+        if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+            List<String> auth = accessor.getNativeHeader("Authorization");
+            if (auth == null || auth.isEmpty()) {
+                auth = accessor.getNativeHeader("token"); // alternativa
+            }
+            if (auth != null && !auth.isEmpty()) {
+                String token = auth.get(0).replace("Bearer ", "");
+                try {
+                    Long userId = jwtUtil.extractId(token);
+                    accessor.setUser(new StompPrincipal(String.valueOf(userId)));
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Invalid token");
+                }
             }
         } else {
-            System.out.println("[JwtHandshakeInterceptor] Não encontrou Principal no atributo 'user'.");
+            if (accessor.getUser() == null && accessor.getSessionAttributes() != null) {
+                Object user = accessor.getSessionAttributes().get("user");
+                if (user instanceof Principal principal) {
+                    accessor.setUser(principal);
+                }
+            }
         }
         return message;
     }
+
 }

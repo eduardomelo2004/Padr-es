@@ -204,13 +204,13 @@ public class PedidoBO {
         estado.proximo(pedido); // muda o estado no pedido
         pedidoDAO.salvar(pedido);
 
-        pedido.notificarObservadores(); // notifica cliente e/ou cozinha
+        messagingTemplate.convertAndSendToUser(
+                pedido.getCliente().getId().toString(), // id do cliente como string
+                "/queue/pedidos",                       // canal privado
+                pedido.getEstado().name()               // conteúdo da mensagem
+        );
 
-//        messagingTemplate.convertAndSendToUser(
-//                pedido.getCliente().getId().toString(), // id do cliente como string
-//                "/queue/pedidos",                       // canal privado
-//                pedido.getEstado().name()               // conteúdo da mensagem
-//        );
+        pedido.notificarObservadores(); // notifica cliente e/ou cozinha
 
         return pedido;
     }
@@ -297,3 +297,5 @@ public class PedidoBO {
         }
     }
 }
+
+

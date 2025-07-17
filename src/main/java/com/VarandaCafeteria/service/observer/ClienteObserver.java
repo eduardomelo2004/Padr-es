@@ -9,10 +9,10 @@ public class ClienteObserver implements PedidoObserver {
     private final Long idCliente;
     private final SimpMessagingTemplate messagingTemplate;
 
-public ClienteObserver(Long idCliente, SimpMessagingTemplate messagingTemplate) {
-    this.idCliente = idCliente;
-    this.messagingTemplate = messagingTemplate;
-}
+    public ClienteObserver(Long idCliente, SimpMessagingTemplate messagingTemplate) {
+        this.idCliente = idCliente;
+        this.messagingTemplate = messagingTemplate;
+    }
 
     @Override
     public void atualizar(Pedido pedido) {
