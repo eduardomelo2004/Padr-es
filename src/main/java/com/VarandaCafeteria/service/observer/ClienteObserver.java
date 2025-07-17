@@ -22,7 +22,7 @@ public class ClienteObserver implements PedidoObserver {
         messagingTemplate.convertAndSendToUser(
                 idCliente,           // usuário (id cliente como string)
                 "/queue/pedidos",    // destino após /user/{idCliente}
-                mensagem             // conteúdo da mensagem
+                "Pedido #" + pedido.getId() + " está agora em: " + pedido.getEstado().name()             // conteúdo da mensagem
         );
 
         System.out.println("Cliente " + idCliente + " foi notificado via /user/queue/pedidos: " + mensagem);
